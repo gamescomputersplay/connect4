@@ -315,22 +315,4 @@ if __name__ == "__main__":
 
 
 
-'''
-#Usage:
-import connectfour
 
-g=connectfour.ConfState(  \
-                "       "+\
-                "       "+\
-                "       "+\
-                "   0   "+\
-                "   X   "+\
-                "  X00  ")
-print ( g.chooseMove( g, 1, 4 ) )
-
-# parameters are:
-#- state ConfState class
-#- player (1 for X, -1 for 0)
-#- depth to go in minimax algo
-
-'''
