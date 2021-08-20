@@ -22,7 +22,7 @@ setNegWeight = 1.5  # How much less oppoment's score weights
 
 
 # Class for one game position
-class ConfState:
+class Connect4Board:
 
     # Create instance
     # Initialize board (empty if none)
@@ -106,7 +106,7 @@ class ConfState:
     def instaWin(self, player):
         mark = "X" if player == 1 else "0"
         for col in self.legitMoves():
-            newBoard = ConfState(self.board)
+            newBoard = Connect4Board(self.board)
             isWin = newBoard.makeMove(player, col)
             if isWin != "":
                 return col
@@ -126,7 +126,7 @@ class ConfState:
             if i not in self.legitMoves():
                 minimax.append(-999 * player)
                 continue
-            newState = ConfState(self.board)
+            newState = Connect4Board(self.board)
             newState.makeMove(player, i)
             res = newState.addPly(player * -1, depth - 1)
             minimax.append(res)
@@ -138,7 +138,7 @@ class ConfState:
     def addPly(self, player, depth):
         results = []
         for i in self.legitMoves():
-            newState = ConfState(self.board)
+            newState = Connect4Board(self.board)
             winner = newState.makeMove(player, i)
             if winner == "" and depth > 1:
                 result = newState.addPly(player * -1, depth - 1)
@@ -190,7 +190,7 @@ class ConfState:
     def getScores(self, player):
         scores = [0, 0, 0, 0, 0, 0, 0]
         for i in self.legitMoves():
-            newState = ConfState(self.board)
+            newState = Connect4Board(self.board)
             newState.makeMove(player, i)
             scores[i] = newState.getOneScore(player)
         return scores
@@ -289,7 +289,7 @@ class ConfState:
 
         return bestmove
 
-# end of ConfState class
+# end of Connect4Board class
 
 
 # Some helper functions to facilitate searching for the winner
@@ -363,7 +363,7 @@ if __name__ == "__main__":
 
     import time
 
-    g = ConfState()
+    g = Connect4Board()
     player = 1
 
     while len(g.legitMoves()) > 0 and g.winner() == "":

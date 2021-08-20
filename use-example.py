@@ -5,7 +5,7 @@ import connectfour
 # Create new position from a string
 # string should be 42-characters long, with X and 0 for played disks
 
-position = connectfour.ConfState(
+position = connectfour.Connect4Board(
                 "       " +
                 "       " +
                 "       " +
