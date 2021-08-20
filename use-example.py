@@ -20,7 +20,7 @@ position=connectfour.ConfState(  \
 #   depth: plies to go through in minimax algorithm
 #   verbose: if True display some results from how the algorithm
 
-move = position.chooseMove( player=1, depth=4, verbose=False)
+move = position.chooseMove( player=1, depth=4, verbose=True)
 
 print (position)
 print ( "Next move is in the column", move )

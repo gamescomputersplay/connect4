@@ -1,24 +1,38 @@
-# Connect Four Module
+####################
+# Connect Four Bot #
+####################
 
-# see at the end of the file for usage example
+# by GamesComputersPlay
+# https://www.youtube.com/watch?v=IpTFe0H52JM
 
-#settings
+
+## Some settings 
+
+# Default depth of the minimax algorithm
+# Larger number produces stronger play, but exponentially increases required time
 setDefaultDepth=6
-setScoreFor2=1
-setScoreFor3=5
-setNegWeight=1.5
+
+# Some values for the heuristic part of the program
+# Chosen pretty arbitrary, TBH
+setScoreFor2 = 1 # Point for 2 discs
+setScoreFor3 = 5 # Point for 3 discs
+setNegWeight = 1.5 # How much less oppoment's score weights in the final decision
 
 
-# GameState class
+
+# Class for one game position
 class ConfState:
 
-    # set board (empty if none)
-    # initialize last move var
+    # Crete instance
+    # Initialize board (empty if none)
+    # Board is a string of 42 characters, " ", "X" or "0",
+    # showing cells line by line top to bottom
+    # initialize last move variable to -1 (no last move)
     def __init__(self, initBoard=" "*42):
         self.board = initBoard
         self.lastMove=-1
 
-    # Nice print of a board
+    # Nice string representation of a board for printing
     def __str__(self):
         buffer = "|"
         for i in range(len(self.board)):
@@ -28,8 +42,20 @@ class ConfState:
         buffer += "|"
         return buffer
 
-    #Add a mark to a board, in column col
-    # player 1=X; -1=0
+    # How many plies has been made so far
+    def pliesMade(self):
+        return 42-self.board.count(" ")
+
+
+    ## Functions related to playing the game 
+    #########################################
+
+    # Play a disc in column col (0-based)
+    # player: 1 for player "X"; -1 for player "0"
+    # (!) Does not check if the column is playable, use legitMoves for that
+    # returns winner ("X" or "0") if the move results in someone's victory
+    # returns "" if there is no winner
+    # Also, sets lastMove variable
     def makeMove(self,player,col):
         mark = "X" if player==1 else "0"
         for i in range(5,-1,-1):
@@ -40,7 +66,8 @@ class ConfState:
                 return self.winner()
                 
             
-    # return a list of availabe moves (col numbers)
+    # Returns a list of all availabe moves (0-based column numbers)
+    # Move is available if there are less than 6 discs in that column
     def legitMoves(self):
         legitMoves=[]
         for i in range(7):
@@ -48,8 +75,8 @@ class ConfState:
                 legitMoves.append(i)
         return legitMoves
     
-    # Check for a winner on a board
-    # uses last move data for speed optimization
+    # Returns a winner ("X", "0" or ""), but only based on the last move
+    # (using only last move is for speed optimization in Minimax part)
     def winner(self):
         if self.lastMove==-1:
             return ""
@@ -61,6 +88,8 @@ class ConfState:
                 return this
         return ""
 
+    # Returns a winner ("X", "0" or ""), based on the whole board
+    # This is used in scoring part of the algorithm
     def winner_brute(self):
         for line in wSlots:
             if self.board[line[0]]!=" " and\
@@ -70,40 +99,11 @@ class ConfState:
                 return self.board[line[0]]
         return ""
 
-    def getOneScore(self,player):
-        mark = "X" if player==1 else "0"
-        otherMark = "0" if player==1 else "X"
-        score = 0
-        for line in wSlots:
-            thisLineCount=0
-            for i in range(4):
-                if self.board[line[i]]==otherMark:
-                    break
-                if self.board[line[i]]==mark:
-                    thisLineCount+=1
-            else:
-                if thisLineCount==2:
-                    score+=setScoreFor2
-                if thisLineCount==3:
-                    score+=setScoreFor3
-        return score
 
-
-    def getScores(self,player):
-        scores=[0,0,0,0,0,0,0]   
-        for i in self.legitMoves():
-            newState = ConfState(self.board)
-            newState.makeMove(player,i)
-            scores[i]=newState.getOneScore(player)
-        return scores
-        
+    ## Naive part of the algorithm
+    ##############################
     
-    # How many plies has been made so far
-    def pliesMade(self):
-        return 42-self.board.count(" ")
-
-    
-    # Check if any one move of the player can win the game
+    # Check if any one move of the player "player" can win the game
     # return N of the column or -1 there is no such move
     def instaWin(self, player):
         mark = "X" if player==1 else "0"
@@ -114,6 +114,16 @@ class ConfState:
                 return col
         return -1
 
+
+
+    ## Minimax mart of the algorythm
+    ################################
+
+    # Base of the minimax
+    # returns the list of outcomes:
+    #   N of winning player (1/-1) or 0 for indeterminate/draw
+    # player: which player we are gettign the reuslts for
+    # depth: plies to go through
     def minimax(self,player,depth):
         minimax=[]   
         for i in range(7):
@@ -126,6 +136,9 @@ class ConfState:
             minimax.append(res)
         return minimax
 
+    # Recursive part of teh minimax
+    # player: player for THIS layer of the tree
+    # depth: remaining depth to go through
     def addPly(self, player, depth):
         results = []
         for i in self.legitMoves():
@@ -152,6 +165,54 @@ class ConfState:
         if player==-1:
             return min(results)
 
+
+
+    ## Heuristic part of the algorithm
+    ##################################
+
+    # Returns a "Score" of the board
+    # (based on the number of 2's and 3's that can potential to become 4's)
+    # Scores values settings are in the beginning of this file
+    # player - which player to use to get the scores (1 for "X", -1 for "0")
+    def getOneScore(self,player):
+        mark = "X" if player==1 else "0"
+        otherMark = "0" if player==1 else "X"
+        score = 0
+        for line in wSlots:
+            thisLineCount=0
+            for i in range(4):
+                if self.board[line[i]]==otherMark:
+                    break
+                if self.board[line[i]]==mark:
+                    thisLineCount+=1
+            else:
+                if thisLineCount==2:
+                    score+=setScoreFor2
+                if thisLineCount==3:
+                    score+=setScoreFor3
+        return score
+
+    # Returns a list of scores for all 7 postential moves
+    def getScores(self,player):
+        scores=[0,0,0,0,0,0,0]   
+        for i in self.legitMoves():
+            newState = ConfState(self.board)
+            newState.makeMove(player,i)
+            scores[i]=newState.getOneScore(player)
+        return scores
+
+
+
+    ## Using all 3 parts of the algorithm together
+    ##############################################
+
+    # Choose the best move,
+    # by weighing together results of minimax and heuristic algorithms
+    # player: player we chose for (1 for "X", -1 for "0")
+    # minimax: list of minimax results
+    # pScores (positive scores): scoring results for this player
+    # nScores (negative scores): scoring results for the opponent
+    # verbose: if True, print out some weights data 
     def considerAll(self, player, minimax, pScores, nScores, verbose):
 
         # pick best minimax result
@@ -195,7 +256,12 @@ class ConfState:
         return best3[self.pliesMade()%len(best3)]
             
     
-    # Chose the next move
+    # Main function of the module:
+    # Choose teh best move in this position
+    # player: who are we chose the move for (1 for "X", -1 for "0")
+    # depth: N of plies to go through for minimax part
+    # verbose: if True, print some data about how decision is made
+    # returns 0-based column number
     def chooseMove(self, player=1, depth=setDefaultDepth, verbose=False):
 
         # 1. If there is an InstaWin - go for it
@@ -231,13 +297,19 @@ class ConfState:
         bestmove = self.considerAll(player, minimax, pScores, nScores, verbose)
 
         
-
         return bestmove
 
 
+# end of ConfState class
 
 
-# helper lists of possible 4-cell lines for checking winner/scores
+## Some helper functions to facilitate searching for the winner
+###############################################################
+
+
+# Generate and return a list of all possible winning lines
+# number are indices in a 42-character line. representing the board
+# [ [0, 1, 2, 3], [1, 2, 3, 4],... [37, 31, 25, 19], [38, 32, 26, 20] ]
 def genSlots():
     wSlots = []
     #horisontal
@@ -270,6 +342,13 @@ def genSlots():
             wSlots.append(line) 
     return wSlots
 
+# Generate and return a set of lists of winning lines
+# from a particular cell (excluding the cell itself)
+# Sounds very complicated, so here's the example:
+# {0: [[1, 2, 3], [7, 14, 21], [8, 16, 24]], 1: [[0, 2, 3], ...
+# It means if you have a disc in position 0, the to form
+# a winning line, you have to have discs
+# in positions 1-2-3, 7-14-21 or 8-16-24
 def genSlotsByCell():
     out = {}
     for i in range(42):
@@ -281,20 +360,22 @@ def genSlotsByCell():
                 out[i].append(line_shorten)
     return out
 
-# Init helper lists
+# Initialize helper lists
 wSlots = genSlots()
 wSlotsByCells = genSlotsByCell()
 
 
+# end of connectfour module
 
 
 
+
+# If the file is run directly: a brief demo,
+# program plays against itself with the defalt parameters
 
 if __name__ == "__main__":
     
-    import random
     import time
-    random.seed(0)
     
     g=ConfState()
     player = 1
@@ -302,20 +383,20 @@ if __name__ == "__main__":
     while len(g.legitMoves())>0 and g.winner()=="":
 
         t = time.time()
-        
+
+        print("="*20, g.pliesMade(), "="*20)        
         move = g.chooseMove(player, verbose=True)
         g.makeMove(player, move )
 
-        print("="*20, g.pliesMade(), "="*20)
-        #print ("Player", "X" if player==1 else "0", "goes:", move)
+
+        print ("Player", "X" if player==1 else "0", "goes:", move)
+        print ("Time spent on this move", time.time()-t)
         print (g)
         
         player *=-1
 
-        print (time.time()-t)
+
+    print ("="*20, "final position", "="*20)
+    print (g)
     print (g.winner() if g.winner()!="" else "no one", "won")
-
-
-
-
 
