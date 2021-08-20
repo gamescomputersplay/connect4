@@ -152,7 +152,7 @@ class ConfState:
         if player==-1:
             return min(results)
 
-    def considerAll(self, player, minimax, pScores, nScores):
+    def considerAll(self, player, minimax, pScores, nScores, verbose):
 
         # pick best minimax result
         best = []
@@ -160,7 +160,8 @@ class ConfState:
         for i in range(7):
             if minimax[i]==func(minimax):
                 best.append(i)
-        print ("Minimax list:", best)
+        if verbose: 
+            print ("Minimax list:", best)
         if len(best)==1:
             return best[0]
 
@@ -168,7 +169,8 @@ class ConfState:
         weights = [0,0,0,0,0,0,0]
         for i in best:
             weights[i] = int( pScores[i] + nScores[i]/setNegWeight  )
-        print ("Score weights:", weights)
+        if verbose:
+            print ("Score weights:", weights)
 
         best2=[]
         for i in best:
@@ -181,7 +183,8 @@ class ConfState:
         centrals = [0,0,0,0,0,0,0]
         for i in best2:
             centrals[i]=4-abs(3-i)
-        print ("Central weights:",centrals)
+        if verbose:
+            print ("Central weights:",centrals)
         best3=[]
         for i in best2:
             if centrals[i]==max(centrals):
@@ -193,7 +196,7 @@ class ConfState:
             
     
     # Chose the next move
-    def chooseMove(self, player, depth=setDefaultDepth, verbose=False):
+    def chooseMove(self, player=1, depth=setDefaultDepth, verbose=False):
 
         # 1. If there is an InstaWin - go for it
         instawin = self.instaWin(player)
@@ -225,7 +228,7 @@ class ConfState:
             print ("Negative Score:", nScores)
 
         # Combine 3,4,5, central distance and pseudo-randomness
-        bestmove = self.considerAll(player, minimax, pScores, nScores)
+        bestmove = self.considerAll(player, minimax, pScores, nScores, verbose)
 
         
 
