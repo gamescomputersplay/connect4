@@ -69,7 +69,8 @@ class Connect4Board:
     # Move is available if there are less than 6 discs in that column
     def legitMoves(self):
         legitMoves = []
-        for i in range(7):
+        # Move exploration order to optimize the performance (+2%)
+        for i in [3, 2, 4, 1, 5, 0, 6]:
             if self.board[i] == " ":
                 legitMoves.append(i)
         return legitMoves
