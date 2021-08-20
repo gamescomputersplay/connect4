@@ -5,12 +5,12 @@ import connectfour
 # Create new position from a string
 # string should be 42-characters long, with X and 0 for played disks
 
-position=connectfour.ConfState(  \
-                "       "+\
-                "       "+\
-                "       "+\
-                "   0   "+\
-                "   X   "+\
+position = connectfour.ConfState(
+                "       " +
+                "       " +
+                "       " +
+                "   0   " +
+                "   X   " +
                 "  X00  ")
 
 
@@ -20,9 +20,8 @@ position=connectfour.ConfState(  \
 #   depth: plies to go through in minimax algorithm
 #   verbose: if True display some results from how the algorithm
 
-move = position.chooseMove( player=1, depth=4, verbose=True)
+move = position.chooseMove(player=1, depth=4, verbose=True)
 
 print (position)
-print ( "Next move is in the column", move )
-
+print ("Next move is in the column", move)
 
